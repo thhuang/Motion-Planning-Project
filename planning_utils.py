@@ -1,6 +1,15 @@
 from enum import Enum
 from queue import PriorityQueue
 import numpy as np
+import re
+
+
+def get_global_home(map_name, alt0=0.0):
+    with open(map_name, 'r') as file:
+        lat0, lon0 = re.findall(r'-?[1-9]\d*\.?\d*', file.readline())
+
+    global_home = [float(lon0), float(lat0), alt0]  # alt0 is set to 0
+    return global_home
 
 
 def create_grid(data, drone_altitude, safety_distance):
@@ -140,7 +149,9 @@ def a_star(grid, h, start, goal):
     return path[::-1], path_cost
 
 
-
 def heuristic(position, goal_position):
     return np.linalg.norm(np.array(position) - np.array(goal_position), ord=2)
 
+
+if __name__ == '__main__':
+    get_global_home('colliders.csv')

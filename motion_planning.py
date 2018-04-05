@@ -5,7 +5,8 @@ from enum import Enum, auto
 
 import numpy as np
 
-from planning_utils import a_star, heuristic, create_grid
+import planning_utils as pu
+
 from udacidrone import Drone
 from udacidrone.connection import MavlinkConnection
 from udacidrone.messaging import MsgID
@@ -24,8 +25,10 @@ class States(Enum):
 
 class MotionPlanning(Drone):
 
-    def __init__(self, connection):
+    def __init__(self, connection, map_name='colliders.csv'):
         super().__init__(connection)
+
+        self.map_name = map_name
 
         self.target_position = np.array([0.0, 0.0, 0.0])
         self.waypoints = []
@@ -119,22 +122,30 @@ class MotionPlanning(Drone):
 
         self.target_position[2] = TARGET_ALTITUDE
 
-        # TODO: read lat0, lon0 from colliders into floating point values
-        
-        # TODO: set home position to (lon0, lat0, 0)
+        # Read (lon0, lat0, alt0) from self.map_name into floating point values
+        # Default: alt0 is 0.0
+        global_home = pu.get_global_home(self.map_name)
 
-        # TODO: retrieve current global position
- 
-        # TODO: convert to current local position using global_to_local()
-        
-        print('global home {0}, position {1}, local position {2}'.format(self.global_home, self.global_position,
-                                                                         self.local_position))
+        # Set home position to (lon0, lat0, alt0)
+        self.set_home_position(global_home[0], global_home[1], global_home[2])
+
+        # Retrieve current global position.
+        current_global_position = [self._longitude, self._latitude, self._altitude]
+
+        # Convert to current local position using global_to_local()
+        current_local_position = global_to_local(current_global_position, global_home)
+
+        print('global home {0}, position {1}, local position {2}'.format(self.global_home, self.global_position, self.local_position))
+        print('global home {0}, position {1}, local position {2}'.format(global_home, current_global_position, current_local_position))
+
+
         # Read in obstacle map
-        data = np.loadtxt('colliders.csv', delimiter=',', dtype='Float64', skiprows=2)
+        data = np.loadtxt(self.map_name, delimiter=',', dtype='Float64', skiprows=2)
         
         # Define a grid for a particular altitude and safety margin around obstacles
-        grid, north_offset, east_offset = create_grid(data, TARGET_ALTITUDE, SAFETY_DISTANCE)
+        grid, north_offset, east_offset = pu.create_grid(data, TARGET_ALTITUDE, SAFETY_DISTANCE)
         print("North offset = {0}, east offset = {1}".format(north_offset, east_offset))
+
         # Define starting point on the grid (this is just grid center)
         grid_start = (-north_offset, -east_offset)
         # TODO: convert start position to current position rather than map center
@@ -147,7 +158,7 @@ class MotionPlanning(Drone):
         # TODO: add diagonal motions with a cost of sqrt(2) to your A* implementation
         # or move to a different search space such as a graph (not done here)
         print('Local Start and Goal: ', grid_start, grid_goal)
-        path, _ = a_star(grid, heuristic, grid_start, grid_goal)
+        path, _ = pu.a_star(grid, pu.heuristic, grid_start, grid_goal)
         # TODO: prune path to minimize number of waypoints
         # TODO (if you're feeling ambitious): Try a different approach altogether!
 
@@ -172,6 +183,7 @@ class MotionPlanning(Drone):
 
 
 if __name__ == "__main__":
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--port', type=int, default=5760, help='Port number')
     parser.add_argument('--host', type=str, default='127.0.0.1', help="host address, i.e. '127.0.0.1'")
@@ -182,3 +194,4 @@ if __name__ == "__main__":
     time.sleep(1)
 
     drone.start()
+
