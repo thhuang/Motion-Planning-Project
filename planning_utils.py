@@ -268,7 +268,7 @@ def create_graph(polygons, nodes, k=5):
     g = nx.Graph()
     tree = KDTree(nodes, metric='euclidean')
     for n1 in tqdm(nodes):
-        _, idxs = tree.query(n1.reshape(1, -1), k=k)
+        idxs = tree.query(n1.reshape(1, -1), k=k, return_distance=False)
         for n2 in nodes[idxs[0][1:]]:
             if can_connect(polygons, n1, n2):
                 dist = np.linalg.norm(n2 - n1, ord=2)
@@ -354,7 +354,7 @@ def probabilistic_roadmap(data, polygons, start_position, goal_position, zmax,
     path, cost = a_star_graph(graph, heuristic, start_node, goal_node)
 
     grid, north_offset, east_offset = create_grid(data, goal_position[2], safety_distance)
-    plot_graph(data, grid, graph, start_position, goal_position, path)
+    plot_graph(data, grid, graph, start_position, goal_position, path, graph_name='graph_{}'.format(len(nodes)))
 
     return path, cost
 
@@ -392,7 +392,7 @@ def plot_map_3D(voxmap, voxel_size=30, add_height=100):
     plt.show()
 
 
-def plot_graph(data, grid, graph, start_position=None, goal_position=None, path=[]):
+def plot_graph(data, grid, graph, start_position=None, goal_position=None, path=[], graph_name='graph'):
 
     print('Plotting graph ...')
     plt.figure(figsize=(12, 12))
@@ -423,7 +423,7 @@ def plot_graph(data, grid, graph, start_position=None, goal_position=None, path=
     plt.xlabel('NORTH')
     plt.ylabel('EAST')
 
-    plt.savefig('Logs/graph')
+    plt.savefig('Logs/{}'.format(graph_name))
     plt.close()
 
 

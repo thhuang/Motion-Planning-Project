@@ -119,8 +119,10 @@ class MotionPlanning(Drone):
         print("Searching for a path ...")
         MAX_ALTITUDE = 30
         SAFETY_DISTANCE = 5
-        NUM_ATTEMPTS = 5
-        NUM_SAMPLES = 100
+        NUM_ATTEMPTS = 10
+        MIN_SAMPLES = 300
+        MAX_SAMPLES = 500
+        k = 8
 
 
         # Read (lon0, lat0, alt0) from self.map_name into floating point values
@@ -159,15 +161,16 @@ class MotionPlanning(Drone):
 
         # Run A* to find a path from start to goal
         print('Local Start and Goal: ', start_position, goal_position)
-        for i in range(NUM_ATTEMPTS):
-            print('\nAttempt {}:'.format(i+1))
+        i = 1
+        path = []
+        while len(path) == 0 and i <= NUM_ATTEMPTS:
+            print('\nAttempt {}:'.format(i))
             path, cost = pu.probabilistic_roadmap(data, polygons, start_position, goal_position, MAX_ALTITUDE,
-                                                  num_samples=min(500, round(NUM_SAMPLES*(1+i))),
-                                                  safety_distance=SAFETY_DISTANCE)
-            if len(path) != 0:
-                break
+                                                  num_samples=min(MAX_SAMPLES, round(MIN_SAMPLES*i)),
+                                                  safety_distance=SAFETY_DISTANCE, k=k)
+        print(path)
 
-        print(path, type(path))
+        #path = [(19, 16, 4), (40, 50, 19), (91, 98, 26), (169, 57, 28), (150, -34, 3), (134, -117, 23), (159, -134, 29), (214, -165, 29), (236, -103, 26), (287, -79, 12), (296, -4, 21)]
 
         # Convert path to waypoints
         waypoints  = [(int(start_position[0]), int(start_position[1]), int(path[0][2]), 0)]
