@@ -117,10 +117,11 @@ class MotionPlanning(Drone):
     def plan_path(self):
         self.flight_state = States.PLANNING
         print("Searching for a path ...")
-        TARGET_ALTITUDE = 5
+        MAX_ALTITUDE = 30
         SAFETY_DISTANCE = 5
+        NUM_ATTEMPTS = 5
+        NUM_SAMPLES = 100
 
-        self.target_position[2] = TARGET_ALTITUDE
 
         # Read (lon0, lat0, alt0) from self.map_name into floating point values
         # Default: alt0 is 0.0
@@ -135,39 +136,50 @@ class MotionPlanning(Drone):
         # Convert to current local position using global_to_local()
         current_local_position = global_to_local(current_global_position, global_home)
 
-        print('global home {0}, position {1}, local position {2}'.format(self.global_home, self.global_position, self.local_position))
+        # Double check
+        #print('global home {0}, position {1}, local position {2}'.format(self.global_home, self.global_position, self.local_position))
         print('global home {0}, position {1}, local position {2}'.format(global_home, current_global_position, current_local_position))
-
 
         # Read in obstacle map
         data = np.loadtxt(self.map_name, delimiter=',', dtype='Float64', skiprows=2)
-        
+        polygons = pu.extract_polygons(data, SAFETY_DISTANCE)
+
+        # Set goal as some arbitrary position on the grid
+        goal_position = pu.random_sample(data, polygons, num_samples=1, zmax=MAX_ALTITUDE).ravel()
+
         # Define a grid for a particular altitude and safety margin around obstacles
-        grid, north_offset, east_offset = pu.create_grid(data, TARGET_ALTITUDE, SAFETY_DISTANCE)
+        grid, north_offset, east_offset = pu.create_grid(data, goal_position[2], SAFETY_DISTANCE)
         print("North offset = {0}, east offset = {1}".format(north_offset, east_offset))
 
-        # Define starting point on the grid (this is just grid center)
-        grid_start = (-north_offset, -east_offset)
-        # TODO: convert start position to current position rather than map center
-        
-        # Set goal as some arbitrary position on the grid
-        grid_goal = (-north_offset + 10, -east_offset + 10)
-        # TODO: adapt to set goal as latitude / longitude position and convert
+        # Define starting point to current position
+        start_position = self.local_position
+
+        pu.plot_map_2D(grid, start_position=start_position, goal_position=goal_position,
+                       north_offset=north_offset, east_offset=east_offset)
 
         # Run A* to find a path from start to goal
-        # TODO: add diagonal motions with a cost of sqrt(2) to your A* implementation
-        # or move to a different search space such as a graph (not done here)
-        print('Local Start and Goal: ', grid_start, grid_goal)
-        path, _ = pu.a_star(grid, pu.heuristic, grid_start, grid_goal)
-        # TODO: prune path to minimize number of waypoints
-        # TODO (if you're feeling ambitious): Try a different approach altogether!
+        print('Local Start and Goal: ', start_position, goal_position)
+        for i in range(NUM_ATTEMPTS):
+            print('\nAttempt {}:'.format(i+1))
+            path, cost = pu.probabilistic_roadmap(data, polygons, start_position, goal_position, MAX_ALTITUDE,
+                                                  num_samples=min(500, round(NUM_SAMPLES*(1+i))),
+                                                  safety_distance=SAFETY_DISTANCE)
+            if len(path) != 0:
+                break
+
+        print(path, type(path))
 
         # Convert path to waypoints
-        waypoints = [[p[0] + north_offset, p[1] + east_offset, TARGET_ALTITUDE, 0] for p in path]
+        waypoints  = [(int(start_position[0]), int(start_position[1]), int(path[0][2]), 0)]
+        waypoints += [(int(p[0]), int(p[1]), int(p[2]), 0) for p in path]
+        waypoints += [(int(goal_position[0]), int(goal_position[1]), int(goal_position[2]), 0)]
+        self.target_position[2] = waypoints[0][2]
+        print(waypoints)
         # Set self.waypoints
-        self.waypoints = waypoints
+        self.waypoints = [(int(p[0]), int(p[1]), int(p[2]), 0) for p in path]
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
         self.send_waypoints()
+
 
     def start(self):
         self.start_log("Logs", "NavLog.txt")
