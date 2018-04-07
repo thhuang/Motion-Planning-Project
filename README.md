@@ -32,13 +32,11 @@ Since the planning algorithm is based on the graph search, nodes should be sampl
 In order to speed up the algorithm, the graph will be generated only once for the map and be reused every inference.
 
 <div align = 'center'>
-    <img src = './images/graph_2000.png' height = '200px'>
-    <img src = './images/graph_6000.png' height = '200px'>
+    <img src = './images/graph_2000.png' height = '400px'>
+    <img src = './images/graph_6000.png' height = '400px'>
 </div>
-
-
 <p align = 'center'>
-It takes 100ms on a 2015 Titan X to style the MIT Stata Center (1024×680) like Udnie, by Francis Picabia.
+    Fig 1: A graph with 2000 nodes (left) and a graph with 6000 nodes (right).
 </p>
 
 
