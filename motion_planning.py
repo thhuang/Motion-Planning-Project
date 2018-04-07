@@ -1,12 +1,14 @@
 import argparse
 import time
 import msgpack
+import os
 from enum import Enum, auto
 
 import numpy as np
 
 import planning_utils as pu
 
+from time import sleep
 from udacidrone import Drone
 from udacidrone.connection import MavlinkConnection
 from udacidrone.messaging import MsgID
@@ -119,8 +121,8 @@ class MotionPlanning(Drone):
         print("Searching for a path ...")
         MAX_ALTITUDE = 30
         SAFETY_DISTANCE = 5
-        NUM_ATTEMPTS = 10
-        MIN_SAMPLES = 300
+        NUM_ATTEMPTS = 5
+        MIN_SAMPLES = 200
         MAX_SAMPLES = 500
         k = 8
 
@@ -159,28 +161,23 @@ class MotionPlanning(Drone):
         pu.plot_map_2D(grid, start_position=start_position, goal_position=goal_position,
                        north_offset=north_offset, east_offset=east_offset)
 
+
         # Run A* to find a path from start to goal
         print('Local Start and Goal: ', start_position, goal_position)
-        i = 1
+        i = 0
         path = []
-        while len(path) == 0 and i <= NUM_ATTEMPTS:
+        while len(path) == 0 and i < NUM_ATTEMPTS:
+            i += 1
             print('\nAttempt {}:'.format(i))
             path, cost = pu.probabilistic_roadmap(data, polygons, start_position, goal_position, MAX_ALTITUDE,
-                                                  num_samples=min(MAX_SAMPLES, round(MIN_SAMPLES*i)),
+                                                  num_samples=min(MAX_SAMPLES, round(MIN_SAMPLES+100*i)),
                                                   safety_distance=SAFETY_DISTANCE, k=k)
-        print(path)
 
-        #path = [(19, 16, 4), (40, 50, 19), (91, 98, 26), (169, 57, 28), (150, -34, 3), (134, -117, 23), (159, -134, 29), (214, -165, 29), (236, -103, 26), (287, -79, 12), (296, -4, 21)]
-
+        # Set takeoff height to the altitude of the first waypoints
+        self.target_position[2] = path[0][2]
         # Convert path to waypoints
-        waypoints  = [(int(start_position[0]), int(start_position[1]), int(path[0][2]), 0)]
-        waypoints += [(int(p[0]), int(p[1]), int(p[2]), 0) for p in path]
-        waypoints += [(int(goal_position[0]), int(goal_position[1]), int(goal_position[2]), 0)]
-        self.target_position[2] = waypoints[0][2]
-        print(waypoints)
-        # Set self.waypoints
         self.waypoints = [(int(p[0]), int(p[1]), int(p[2]), 0) for p in path]
-        # TODO: send waypoints to sim (this is just for visualization of waypoints)
+        # Send waypoints to sim (this is just for visualization of waypoints)
         self.send_waypoints()
 
 
@@ -191,7 +188,7 @@ class MotionPlanning(Drone):
         self.connection.start()
 
         # Only required if they do threaded
-        # while self.in_mission:
+        #while self.in_mission:
         #    pass
 
         self.stop_log()
@@ -203,6 +200,8 @@ if __name__ == "__main__":
     parser.add_argument('--port', type=int, default=5760, help='Port number')
     parser.add_argument('--host', type=str, default='127.0.0.1', help="host address, i.e. '127.0.0.1'")
     args = parser.parse_args()
+
+    pu.construct_graph('colliders.csv', num_samples=1000)
 
     conn = MavlinkConnection('tcp:{0}:{1}'.format(args.host, args.port), timeout=60)
     drone = MotionPlanning(conn)

@@ -2,13 +2,13 @@ from enum import Enum
 from queue import PriorityQueue
 from shapely.geometry import Polygon, Point, LineString
 from sklearn.neighbors import KDTree
-from time import sleep
 from tqdm import tqdm
 from udacidrone.frame_utils import global_to_local
 
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
+import os
 import re
 
 
@@ -276,7 +276,7 @@ def create_graph(polygons, nodes, k=5):
     return g
 
 
-def extract_polygons(data, safety_distance):
+def extract_polygons(data, safety_distance=5):
     polygons = []
     for i in range(data.shape[0]):
         north, east, alt, d_north, d_east, d_alt = data[i, :]
@@ -340,23 +340,45 @@ def closest_node(graph, point):
     return list(graph.nodes)[int(idx)]
 
 
-def probabilistic_roadmap(data, polygons, start_position, goal_position, zmax,
-                          num_samples=100, k=5, safety_distance=5):
-    nodes = random_sample(data, polygons, zmax=zmax, num_samples=num_samples)
-    graph = create_graph(polygons, nodes, k=k)
+def probabilistic_roadmap(data, polygons, start_position=None, goal_position=None, zmax=20,
+                          num_samples=1000, k=10, safety_distance=5):
 
-    start_node = closest_node(graph, start_position)
-    goal_node = closest_node(graph, goal_position)
-    print('Start node: {}'.format(start_node))
-    print('Goal node:  {}'.format(goal_node))
-
-    # Run A* on the graph
-    path, cost = a_star_graph(graph, heuristic, start_node, goal_node)
+    if goal_position is None:
+        goal_position = (0, 0, 5)
 
     grid, north_offset, east_offset = create_grid(data, goal_position[2], safety_distance)
-    plot_graph(data, grid, graph, start_position, goal_position, path, graph_name='graph_{}'.format(len(nodes)))
 
-    return path, cost
+    if not os.path.exists('graph.gpickle'):
+        nodes = random_sample(data, polygons, zmax=zmax, num_samples=num_samples)
+        graph = create_graph(polygons, nodes, k=k)
+        nx.write_gpickle(graph, 'graph.gpickle')
+        plot_graph(data, grid, graph)
+    else:
+        graph = nx.read_gpickle('graph.gpickle')
+
+    if start_position is not None and goal_position is not None:
+        start_node = closest_node(graph, start_position)
+        goal_node = closest_node(graph, goal_position)
+        print('Start node: {}'.format(start_node))
+        print('Goal node:  {}'.format(goal_node))
+
+        # Run A* on the graph
+        path, cost = a_star_graph(graph, heuristic, start_node, goal_node)
+
+        # Plot the graph
+        plot_graph(data, grid, graph, start_position, goal_position, path, graph_name='graph_{}_{}'.format(start_node, goal_node))
+
+        return path, cost
+
+
+def construct_graph(map_name, num_samples=1000):
+    print('Constructing graph ...')
+    if not os.path.exists('graph.gpickle'):
+        data = np.loadtxt(map_name, delimiter=',', dtype='Float64', skiprows=2)
+        polygons = extract_polygons(data)
+        probabilistic_roadmap(data, polygons, num_samples=num_samples)
+    else:
+        print('Graph exists!')
 
 
 def plot_map_2D(grid, start_position=None, goal_position=None,
@@ -401,13 +423,14 @@ def plot_graph(data, grid, graph, start_position=None, goal_position=None, path=
     nmin = np.min(data[:, 0])
     emin = np.min(data[:, 1])
 
-    # Draw edges
-    for (n1, n2) in graph.edges:
-        plt.plot([n1[1] - emin, n2[1] - emin], [n1[0] - nmin, n2[0] - nmin], 'black', alpha=0.5)
+    if start_position is None and goal_position is None:
+        # Draw edges
+        for (n1, n2) in graph.edges:
+            plt.plot([n1[1] - emin, n2[1] - emin], [n1[0] - nmin, n2[0] - nmin], 'black', alpha=0.5)
 
-    # Draw connected nodes
-    for n1 in graph.nodes:
-        plt.scatter(n1[1] - emin, n1[0] - nmin, c='blue')
+        # Draw connected nodes
+        for n1 in graph.nodes:
+            plt.scatter(n1[1] - emin, n1[0] - nmin, c='blue')
 
     # Draw the path
     if len(path):
@@ -416,7 +439,7 @@ def plot_graph(data, grid, graph, start_position=None, goal_position=None, path=
 
     # plot start and goal
     if start_position is not None:
-        plt.plot(start_position[1] - emin, start_position[0] - nmin, 'rx')
+        plt.plot(start_position[1] - emin, start_position[0] - nmin, 'r*')
     if goal_position is not None:
         plt.plot(goal_position[1] - emin, goal_position[0] - nmin, 'rx')
 
