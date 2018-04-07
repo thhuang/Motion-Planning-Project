@@ -76,6 +76,15 @@ def valid_actions(grid, current_node):
     if y + 1 > m or grid[x, y + 1] == 1:
         valid_actions.remove(Action.EAST)
 
+    if (x - 1 < 0 and y - 1 < 0) or grid[x - 1, y - 1] == 1:
+        valid_actions.remove(Action.NORTH_WEST)
+    if (x - 1 < 0 and y + 1 > m) or grid[x - 1, y + 1] == 1:
+        valid_actions.remove(Action.NORTH_EAST)
+    if (x + 1 > n and y - 1 < 0) or grid[x + 1, y - 1] == 1:
+        valid_actions.remove(Action.SOUTH_WEST)
+    if (x + 1 > n and y + 1 > m) or grid[x + 1, y + 1] == 1:
+        valid_actions.remove(Action.SOUTH_EAST)
+
     return valid_actions
 
 
@@ -341,7 +350,7 @@ def closest_node(graph, point):
 
 
 def probabilistic_roadmap(data, polygons, start_position=None, goal_position=None, zmax=20,
-                          num_samples=1000, k=10, safety_distance=5):
+                          num_samples=300, k=10, safety_distance=5):
 
     if goal_position is None:
         goal_position = (0, 0, 5)
@@ -366,39 +375,67 @@ def probabilistic_roadmap(data, polygons, start_position=None, goal_position=Non
         path, cost = a_star_graph(graph, heuristic, start_node, goal_node)
 
         # Plot the graph
-        plot_graph(data, grid, graph, start_position, goal_position, path, graph_name='graph_{}_{}'.format(start_node, goal_node))
+        plot_graph(data, grid, graph, start_position, goal_position, north_offset, east_offset, path,
+                   graph_name='graph_{}_{}'.format(start_node, goal_node))
 
         return path, cost
 
 
-def construct_graph(map_name, num_samples=1000):
+def construct_graph(map_name, num_samples=1000, k=10, zmax=20):
     print('Constructing graph ...')
     if not os.path.exists('graph.gpickle'):
         data = np.loadtxt(map_name, delimiter=',', dtype='Float64', skiprows=2)
         polygons = extract_polygons(data)
-        probabilistic_roadmap(data, polygons, num_samples=num_samples)
+        probabilistic_roadmap(data, polygons, num_samples=num_samples, k=k, zmax=zmax)
     else:
         print('Graph exists!')
 
 
+def prune_path(polygons, path):
+    print('Pruning the path ...')
+
+    pruned_path = [p for p in path]
+
+    # prune the path!
+    i = 0
+    while i < len(pruned_path) - 2:
+        p1 = pruned_path[i]
+        p3 = pruned_path[i + 2]
+        if can_connect(polygons, p1, p3):
+            pruned_path.remove(pruned_path[i + 1])
+        else:
+            i += 1
+    return pruned_path
+
+
 def plot_map_2D(grid, start_position=None, goal_position=None,
-                north_offset=None, east_offset=None, show_plot=False):
+                north_offset=None, east_offset=None, path=[],
+                show_plot=False, plot_name='grid'):
 
     plt.figure(figsize=(8, 8))
 
     print('Plotting 2D map ...')
     plt.imshow(grid, cmap='Greys', origin='lower')
 
-    # plot start and goal
-    plt.plot(start_position[1] - east_offset, start_position[0] - north_offset, 'rx')
-    plt.plot(goal_position[1] - east_offset, goal_position[0] - north_offset, 'rx')
+    # Plot start and goal
+    if start_position is not None:
+        plt.plot(start_position[1] - east_offset, start_position[0] - north_offset, 'r^', markersize=8)
+    if goal_position is not None:
+        plt.plot(goal_position[1] - east_offset, goal_position[0] - north_offset, 'r*', markersize=15)
+
+    # Plot the path
+    if len(path):
+        path_2d = np.array(path)[:, 0:2] - np.array((north_offset, east_offset))
+        plt.plot(path_2d[:, 1], path_2d[:, 0], 'g')
+        plt.scatter(path_2d[:, 1], path_2d[:, 0])
 
     plt.xlabel('EAST')
     plt.ylabel('NORTH')
-    plt.savefig('Logs/grid')
+    plt.savefig('Logs/{}'.format(plot_name))
     if show_plot:
         plt.show()
     plt.close()
+
 
 def plot_map_3D(voxmap, voxel_size=30, add_height=100):
     print('Plotting 3D map ...')
@@ -416,38 +453,46 @@ def plot_map_3D(voxmap, voxel_size=30, add_height=100):
     plt.show()
 
 
-def plot_graph(data, grid, graph, start_position=None, goal_position=None, path=[], graph_name='graph'):
+def plot_graph(data, grid, graph, start_position=None, goal_position=None,
+               north_offset=None, east_offset=None,
+               path=[], graph_name='graph'):
 
     print('Plotting graph ...')
-    plt.figure(figsize=(12, 12))
+    plt.figure(figsize=(8, 8))
     plt.imshow(grid, cmap='Greys', origin='lower')
-
-    nmin = np.min(data[:, 0])
-    emin = np.min(data[:, 1])
 
     if start_position is None and goal_position is None:
         # Draw edges
         for (n1, n2) in graph.edges:
-            plt.plot([n1[1] - emin, n2[1] - emin], [n1[0] - nmin, n2[0] - nmin], 'black', alpha=0.5)
+            plt.plot([n1[1] - east_offset,  n2[1] - east_offset],
+                     [n1[0] - north_offset, n2[0] - north_offset],
+                     'black', alpha=0.5)
 
         # Draw connected nodes
         for n1 in graph.nodes:
-            plt.scatter(n1[1] - emin, n1[0] - nmin, c='blue')
+            plt.scatter(n1[1] - east_offset, n1[0] - north_offset, c='blue')
 
     # Draw the path
     if len(path):
-        path_2d = np.array(path)[:, 0:2] - np.array((nmin, emin))
-        plt.plot(path_2d[:, 1], path_2d[:, 0], 'ro-')
+        path_2d = np.array(path)[:, 0:2] - np.array((north_offset, east_offset))
+        plt.plot(path_2d[:, 1], path_2d[:, 0], 'g')
+        plt.plot(path_2d[:, 1], path_2d[:, 0], 'o')
 
     # plot start and goal
     if start_position is not None:
-        plt.plot(start_position[1] - emin, start_position[0] - nmin, 'r*')
+        plt.plot(start_position[1] - east_offset,
+                 start_position[0] - north_offset,
+                 'rx', markersize=12)
     if goal_position is not None:
-        plt.plot(goal_position[1] - emin, goal_position[0] - nmin, 'rx')
+        plt.plot(goal_position[1] - east_offset,
+                 goal_position[0] - north_offset,
+                 'r*', markersize=12)
 
-    plt.xlabel('NORTH')
-    plt.ylabel('EAST')
+    plt.xlabel('EAST')
+    plt.ylabel('NORTH')
 
+    if not os.path.exists('Logs'):
+        os.mkdir('Logs')
     plt.savefig('Logs/{}'.format(graph_name))
     plt.close()
 

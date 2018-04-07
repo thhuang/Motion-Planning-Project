@@ -156,7 +156,7 @@ class MotionPlanning(Drone):
         print("North offset = {0}, east offset = {1}".format(north_offset, east_offset))
 
         # Define starting point to current position
-        start_position = self.local_position
+        start_position = [int(coord) for coord in self.local_position]
 
         pu.plot_map_2D(grid, start_position=start_position, goal_position=goal_position,
                        north_offset=north_offset, east_offset=east_offset)
@@ -164,14 +164,15 @@ class MotionPlanning(Drone):
 
         # Run A* to find a path from start to goal
         print('Local Start and Goal: ', start_position, goal_position)
-        i = 0
-        path = []
-        while len(path) == 0 and i < NUM_ATTEMPTS:
-            i += 1
-            print('\nAttempt {}:'.format(i))
-            path, cost = pu.probabilistic_roadmap(data, polygons, start_position, goal_position, MAX_ALTITUDE,
-                                                  num_samples=min(MAX_SAMPLES, round(MIN_SAMPLES+100*i)),
-                                                  safety_distance=SAFETY_DISTANCE, k=k)
+        path, cost = pu.probabilistic_roadmap(data, polygons, start_position, goal_position, MAX_ALTITUDE,
+                                              num_samples=np.random.randint(MIN_SAMPLES, MAX_SAMPLES),
+                                              safety_distance=SAFETY_DISTANCE, k=k)
+
+        # Prune the path
+        path = pu.prune_path(polygons, path)
+        pu.plot_map_2D(grid, start_position=start_position, goal_position=goal_position,
+                       north_offset=north_offset, east_offset=east_offset, path=path,
+                       plot_name='final_path_{}_{}'.format(tuple(start_position), tuple(goal_position)))
 
         # Set takeoff height to the altitude of the first waypoints
         self.target_position[2] = path[0][2]
@@ -179,7 +180,6 @@ class MotionPlanning(Drone):
         self.waypoints = [(int(p[0]), int(p[1]), int(p[2]), 0) for p in path]
         # Send waypoints to sim (this is just for visualization of waypoints)
         self.send_waypoints()
-
 
     def start(self):
         self.start_log("Logs", "NavLog.txt")
@@ -201,7 +201,7 @@ if __name__ == "__main__":
     parser.add_argument('--host', type=str, default='127.0.0.1', help="host address, i.e. '127.0.0.1'")
     args = parser.parse_args()
 
-    pu.construct_graph('colliders.csv', num_samples=1000)
+    pu.construct_graph('colliders.csv', num_samples=6000, k=10, zmax=30)
 
     conn = MavlinkConnection('tcp:{0}:{1}'.format(args.host, args.port), timeout=60)
     drone = MotionPlanning(conn)
