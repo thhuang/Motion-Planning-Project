@@ -29,31 +29,33 @@ Moreover, a planning state is added to automatically generate waypoints.
 
 
 Since the planning algorithm is based on the graph search, nodes should be sampled before constructing the graph.
-In order to speed up the algorithm, the graph will be generated only once for the map and be reused every inference.
+In order to speed up the algorithm, the graph will be generated only once from the map (Fig 1) and be reused every inference.
 
 <div align = 'center'>
     <img src = './images/graph_2000.png' height = '400px'>
     <img src = './images/graph_6000.png' height = '400px'>
 </div>
 <p align = 'center'>
-    Fig 1: A graph with 2000 nodes (left) and a graph with 6000 nodes (right).
+    Fig 1: A graphs with 2000 nodes (left) and a graph with 6000 nodes (right).
 </p>
 
+
+In the planning state, current local position of the drone is determined as the starting position; the goal position is randomly sampled from the free space in the 3D map (Fig 2).
 
 
 <div align='center'>
     <img src='./images/grid.png' height='400px'">
 </div>
+<p align = 'center'>
+    Fig 2: An example of the start position and the goal position.
+</p>
 
 
 <div align='center'>
     <img src='./images/graph_(5, -6, 20)_(576, 433, 5).png' height='400px'">
-</div>
-
-
-<div align='center'>
     <img src='./images/final_path_(0, 0, 0)_(584, 430, 25).png' height='400px'">
 </div>
+
 
 
 #### 2. Set your current local position
