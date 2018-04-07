@@ -48,7 +48,7 @@ Moreover, a planning state is added to automatically generate waypoints.
 
 
 <div align='center'>
-    <img src='./images/final_path_(5, -6, 20)_(256, -317, 12).png' height='400px'">
+    <img src='./images/final_path_(0, 0, 0)_(253, -319, 19).png' height='400px'">
 </div>
 
 
@@ -81,4 +81,6 @@ For this step you can use a collinearity test or ray tracing method like Bresenh
 ### Execute the flight
 #### 1. Does it work?
 It works!
-
+<div align='center'>
+    <img src='./images/simulation.gif' height='400px'">
+</div>
