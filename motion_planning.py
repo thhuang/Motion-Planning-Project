@@ -118,7 +118,6 @@ class MotionPlanning(Drone):
         print("Searching for a path ...")
         MAX_ALTITUDE = 30
         SAFETY_DISTANCE = 5
-        NUM_ATTEMPTS = 5
         MIN_SAMPLES = 200
         MAX_SAMPLES = 500
         k = 8
