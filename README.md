@@ -1,6 +1,7 @@
 ## Project: 3D Motion Planning
 ![Quad Image](./images/quad.png)
 
+
 ---
 ### Required Steps for a Passing Submission ([Rubric](https://review.udacity.com/#!/rubrics/1534/view) Points):
 - [x] Load the 2.5D map in the colliders.csv file describing the environment.
@@ -27,14 +28,19 @@ You're reading it! Below I describe how I addressed each rubric point and where 
 Moreover, a planning state is added to automatically generate waypoints.
 
 
-<div align='center'>
-    <img src='./images/graph_2000.png' height='400px'">
+Since the planning algorithm is based on the graph search, nodes should be sampled before constructing the graph.
+In order to speed up the algorithm, the graph will be generated only once for the map and be reused every inference.
+
+<div align = 'center'>
+    <img src = './images/graph_2000.png' height = '200px'>
+    <img src = './images/graph_6000.png' height = '200px'>
 </div>
 
 
-<div align='center'>
-    <img src='./images/graph_6000.png' height='400px'">
-</div>
+<p align = 'center'>
+It takes 100ms on a 2015 Titan X to style the MIT Stata Center (1024×680) like Udnie, by Francis Picabia.
+</p>
+
 
 
 <div align='center'>
