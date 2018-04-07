@@ -43,12 +43,12 @@ Moreover, a planning state is added to automatically generate waypoints.
 
 
 <div align='center'>
-    <img src='./images/graph_(5, -6, 20)_(256, -317, 12).png' height='400px'">
+    <img src='./images/graph_(5, -6, 20)_(576, 433, 5).png' height='400px'">
 </div>
 
 
 <div align='center'>
-    <img src='./images/final_path_(0, 0, 0)_(253, -319, 19).png' height='400px'">
+    <img src='./images/final_path_(0, 0, 0)_(584, 430, 25).png' height='400px'">
 </div>
 
 
