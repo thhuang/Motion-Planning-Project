@@ -1,8 +1,5 @@
 ## Project: 3D Motion Planning
-
-<div align='center'>
-    <img src='./images/quad.png' height='400px'">
-</div>
+![Quad Image](./images/quad.png)
 
 ---
 ### Required Steps for a Passing Submission ([Rubric](https://review.udacity.com/#!/rubrics/1534/view) Points):
@@ -28,7 +25,31 @@ You're reading it! Below I describe how I addressed each rubric point and where 
 
 `motion_planning.py` is implemented with a event-driven code similar to [`backyard_flyer.py`](https://github.com/thhuang/Backyard-Flyer-Project/blob/master/backyard_flyer.py).
 Moreover, a planning state is added to automatically generate waypoints.
-The main planning algorithm 
+
+
+<div align='center'>
+    <img src='./images/graph_2000.png' height='400px'">
+</div>
+
+
+<div align='center'>
+    <img src='./images/graph_6000.png' height='400px'">
+</div>
+
+
+<div align='center'>
+    <img src='./images/grid.png' height='400px'">
+</div>
+
+
+<div align='center'>
+    <img src='./images/graph_(5, -6, 20)_(256, -317, 12).png' height='400px'">
+</div>
+
+
+<div align='center'>
+    <img src='./images/final_path_(5, -6, 20)_(256, -317, 12).png' height='400px'">
+</div>
 
 
 #### 2. Set your current local position
