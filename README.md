@@ -1,7 +1,5 @@
 ## Project: 3D Motion Planning
 
-
----
 ### Required Steps for a Passing Submission ([Rubric](https://review.udacity.com/#!/rubrics/1534/view) Points):
 - [x] Load the 2.5D map in the colliders.csv file describing the environment.
 - [x] Discretize the environment into a grid or graph representation.
@@ -27,6 +25,7 @@ You're reading it! Below I describe how I addressed each rubric point and where 
 Moreover, a planning state is added to automatically generate waypoints.
 
 
+Functions and classes for path planning is written in `planning_utils.py`.
 Since the planning algorithm is based on the graph search, nodes should be sampled before constructing the graph.
 In order to speed up the algorithm, the graph (Fig 1) will be generated only once from the 2.5D map and be reused every inference.
 
@@ -42,6 +41,7 @@ In order to speed up the algorithm, the graph (Fig 1) will be generated only onc
 In the planning state, current local position of the drone is determined as the starting position; the goal position is randomly sampled from the free space in the 2.5D map (Fig 2).
 A*, a search algorithm, is used for searching path through nodes in the graph (Fig 3).
 Finally, the path is pruned to get final waypoints (Fig 3).
+After planning, the drone will take off, go through waypoints, and fly to the goal.
 
 <div align='center'>
     <img src='./images/grid.png' height='400px'">
