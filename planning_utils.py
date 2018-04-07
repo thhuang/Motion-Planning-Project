@@ -482,11 +482,11 @@ def plot_graph(data, grid, graph, start_position=None, goal_position=None,
     if start_position is not None:
         plt.plot(start_position[1] - east_offset,
                  start_position[0] - north_offset,
-                 'rx', markersize=12)
+                 'r^', markersize=8)
     if goal_position is not None:
         plt.plot(goal_position[1] - east_offset,
                  goal_position[0] - north_offset,
-                 'r*', markersize=12)
+                 'r*', markersize=15)
 
     plt.xlabel('EAST')
     plt.ylabel('NORTH')
