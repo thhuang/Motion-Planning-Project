@@ -2,7 +2,7 @@
 ![Quad Image](./misc/enroute.png)
 
 ---
-# Required Steps for a Passing Submission:
+### Required Steps for a Passing Submission ([Rubric](https://review.udacity.com/#!/rubrics/1534/view) Points):
 - [x] Load the 2.5D map in the colliders.csv file describing the environment.
 - [x] Discretize the environment into a grid or graph representation.
 - [x] Define the start and goal locations.
@@ -10,9 +10,6 @@
 - [x] Use a collinearity test or ray tracing method (like Bresenham) to remove unnecessary waypoints.
 - [x] Return waypoints in local ECEF coordinates (format for `self.all_waypoints` is [N, E, altitude, heading], where the drone’s start location corresponds to [0, 0, 0, 0].
 - [ ] Write it up.
-
-## [Rubric](https://review.udacity.com/#!/rubrics/1534/view) Points
-### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
 
 ---
 ### Writeup / README
