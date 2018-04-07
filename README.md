@@ -1,5 +1,4 @@
 ## Project: 3D Motion Planning
-![Quad Image](./images/quad.png)
 
 
 ---
@@ -29,7 +28,7 @@ Moreover, a planning state is added to automatically generate waypoints.
 
 
 Since the planning algorithm is based on the graph search, nodes should be sampled before constructing the graph.
-In order to speed up the algorithm, the graph will be generated only once from the map (Fig 1) and be reused every inference.
+In order to speed up the algorithm, the graph (Fig 1) will be generated only once from the 2.5D map and be reused every inference.
 
 <div align = 'center'>
     <img src = './images/graph_2000.png' height = '400px'>
@@ -37,18 +36,18 @@ In order to speed up the algorithm, the graph will be generated only once from t
 </div>
 <p align = 'center'>
     Fig 1: A graphs with 2000 nodes (left) and a graph with 6000 nodes (right).
-    
 </p>
 
 
-In the planning state, current local position of the drone is determined as the starting position; the goal position is randomly sampled from the free space in the 3D map (Fig 2).
-
+In the planning state, current local position of the drone is determined as the starting position; the goal position is randomly sampled from the free space in the 2.5D map (Fig 2).
+A*, a search algorithm, is used for searching path through nodes in the graph (Fig 3).
+Finally, the path is pruned to get final waypoints (Fig 3).
 
 <div align='center'>
     <img src='./images/grid.png' height='400px'">
 </div>
 <p align = 'center'>
-    Fig 2: An example of the start position and the goal position.
+    Fig 2: An example of the start position (triangle) and the goal position (star).
 </p>
 
 
@@ -56,6 +55,9 @@ In the planning state, current local position of the drone is determined as the 
     <img src='./images/graph_(5, -6, 20)_(576, 433, 5).png' height='400px'">
     <img src='./images/final_path_(0, 0, 0)_(584, 430, 25).png' height='400px'">
 </div>
+<p align = 'center'>
+    Fig 3: Path waypoints before (left) and after (right) pruned.
+</p>
 
 
 
