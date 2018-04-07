@@ -382,7 +382,7 @@ def construct_graph(map_name, num_samples=1000):
 
 
 def plot_map_2D(grid, start_position=None, goal_position=None,
-                north_offset=None, east_offset=None, path=None):
+                north_offset=None, east_offset=None, show_plot=False):
 
     plt.figure(figsize=(8, 8))
 
@@ -395,8 +395,10 @@ def plot_map_2D(grid, start_position=None, goal_position=None,
 
     plt.xlabel('EAST')
     plt.ylabel('NORTH')
-    plt.show()
-
+    plt.savefig('Logs/grid')
+    if show_plot:
+        plt.show()
+    plt.close()
 
 def plot_map_3D(voxmap, voxel_size=30, add_height=100):
     print('Plotting 3D map ...')
