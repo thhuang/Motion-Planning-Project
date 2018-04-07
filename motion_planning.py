@@ -1,14 +1,11 @@
 import argparse
-import time
 import msgpack
-import os
-from enum import Enum, auto
+import time
 
 import numpy as np
-
 import planning_utils as pu
 
-from time import sleep
+from enum import Enum, auto
 from udacidrone import Drone
 from udacidrone.connection import MavlinkConnection
 from udacidrone.messaging import MsgID
