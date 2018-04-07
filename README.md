@@ -40,6 +40,8 @@ In order to speed up the algorithm, the graph will be generated only once from t
 </p>
 
 
+
+
 In the planning state, current local position of the drone is determined as the starting position; the goal position is randomly sampled from the free space in the 3D map (Fig 2).
 
 
