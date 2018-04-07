@@ -37,9 +37,8 @@ In order to speed up the algorithm, the graph will be generated only once from t
 </div>
 <p align = 'center'>
     Fig 1: A graphs with 2000 nodes (left) and a graph with 6000 nodes (right).
+    
 </p>
-
-
 
 
 In the planning state, current local position of the drone is determined as the starting position; the goal position is randomly sampled from the free space in the 3D map (Fig 2).
