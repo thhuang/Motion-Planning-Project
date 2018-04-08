@@ -129,6 +129,9 @@ else:
 Thus A* for grid search ([`a_star_grid`](https://github.com/thhuang/Motion-Planning-Project/blob/master/planning_utils.py#L95-L144)) is able to search for a diagonal path.
 
 
+Furthermore, A* for graph search ([`a_star_graph`](https://github.com/thhuang/Motion-Planning-Project/blob/master/planning_utils.py#L147-L188)) is implemented to generate probabilistic roadmap.
+
+
 #### 6. Cull waypoints 
 
 For this step you can use a collinearity test or ray tracing method like Bresenham. The idea is simply to prune your path of unnecessary waypoints. Explain the code you used to accomplish this step.
