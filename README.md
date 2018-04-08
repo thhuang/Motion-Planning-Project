@@ -125,7 +125,7 @@ else:
 #### 5. Modify A* to include diagonal motion (or replace A* altogether)
 
 [`Action`](https://github.com/thhuang/Motion-Planning-Project/blob/master/planning_utils.py#L16-L40) class is extended with four diagonal directions which have a cost of sqrt(2).
-[`valid_action`](https://github.com/thhuang/Motion-Planning-Project/blob/master/planning_utils.py#63-L92) function is also extended to check whether the diagonal motion is valid.
+[`valid_action`](https://github.com/thhuang/Motion-Planning-Project/blob/master/planning_utils.py#L63-L92) function is also extended to check whether the diagonal motion is valid.
 Thus A* for grid search ([`a_star_grid`](https://github.com/thhuang/Motion-Planning-Project/blob/master/planning_utils.py#95-L144)) is able to search for a diagonal path.
 
 
