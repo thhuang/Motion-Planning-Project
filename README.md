@@ -25,7 +25,7 @@ You're reading it! Below I describe how I addressed each rubric point and where 
 Morever, a planning state is added to automatically generate waypoints.
 
 
-Functions and classes for path planning is written in [`planning_utils.py`](https://github.com/thhuang/Motion-Planning-Project/blob/master/planning_utils.py).
+Functions and classes for path planning are written in [`planning_utils.py`](https://github.com/thhuang/Motion-Planning-Project/blob/master/planning_utils.py).
 Since the planning algorithm is based on the graph search, nodes should be sampled before constructing the graph.
 In order to speed up the process, the graph (Fig 1) will be generated only once from the 2.5D map and be reused every inference.
 
@@ -34,13 +34,13 @@ In order to speed up the process, the graph (Fig 1) will be generated only once 
     <img src = './images/graph_6000.png' height = '400px'>
 </div>
 <p align = 'center'>
-    Fig 1: A graphs with 2000 nodes (left) and a graph with 6000 nodes (right).
+    Fig 1: A graph with 2000 nodes (left) and a graph with 6000 nodes (right).
 </p>
 
 
 In the planning state, current local position of the drone is determined as the starting position; the goal position is randomly sampled from the free space in the 2.5D map (Fig 2).
-A*, a search algorithm, is used for searching path through nodes in the graph (Fig 3).
-Finally, the path is pruned to get final waypoints (Fig 3).
+A*, a search algorithm, is used for searching path through nodes in the graph (Fig 3 left).
+Finally, the path is pruned to get final waypoints (Fig 3 right).
 After planning, the drone will take off, go through waypoints, and fly to the goal.
 
 <div align='center'>
@@ -65,7 +65,7 @@ After planning, the drone will take off, go through waypoints, and fly to the go
 #### 1. Set your global home position
 
 Since the pre-determined global home position is written in the first line of [`colliders.csv`](https://github.com/thhuang/Motion-Planning-Project/blob/master/colliders.csv#L1), 
-[`get_global_home`](https://github.com/thhuang/Motion-Planning-Project/blob/master/planning_utils.py#L195-L200) can extracts the coordinate from it and returns with an altitude (default is 0.0).
+[`get_global_home`](https://github.com/thhuang/Motion-Planning-Project/blob/master/planning_utils.py#L195-L200) can extracts the coordinate from it and returns with an altitude combined (default altitude is 0.0).
 
 ```python
 def get_global_home(map_name, alt0=0.0):
@@ -103,9 +103,9 @@ start_position = [int(coord) for coord in self.local_position]
 
 #### 4. Set grid goal position from geodetic coords
 
-The Goal position may be set with command line arguments.
+The grid goal position may be set with command line arguments.
 ```bash
-python motion_planning.py --goal_lon -122.394150 --goal_lat 37.797433 --goal_alt 10
+python motion_planning.py --goal_lon -122.394150 --goal_lat 37.797433 --goal_alt 10.0
 ```
 
 The goal altitude is optional, and the default altitude is 5.0.
