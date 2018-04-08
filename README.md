@@ -22,7 +22,7 @@ You're reading it! Below I describe how I addressed each rubric point and where 
 #### 1. Explain the functionality of what's provided in `motion_planning.py` and `planning_utils.py`
 
 [`motion_planning.py`](https://github.com/thhuang/Motion-Planning-Project/blob/master/motion_planning.py) is implemented with a event-driven code similar to [`backyard_flyer.py`](https://github.com/thhuang/Backyard-Flyer-Project/blob/master/backyard_flyer.py).
-Moreover, a planning state is added to automatically generate waypoints.
+Morever, a planning state is added to automatically generate waypoints.
 
 
 Functions and classes for path planning is written in [`planning_utils.py`](https://github.com/thhuang/Motion-Planning-Project/blob/master/planning_utils.py).
@@ -63,31 +63,64 @@ After planning, the drone will take off, go through waypoints, and fly to the go
 #### 1. Set your global home position
 
 Since the pre-determined global home position is written in the first line of [`colliders.csv`](https://github.com/thhuang/Motion-Planning-Project/blob/master/colliders.csv#L1), 
-[`planning_utils.get_global_home`](https://github.com/thhuang/Motion-Planning-Project/blob/master/planning_utils.py#L195-L200) can extracts the coordinate from it and returns with an altitude (default is 0.0).
+[`get_global_home`](https://github.com/thhuang/Motion-Planning-Project/blob/master/planning_utils.py#L195-L200) can extracts the coordinate from it and returns with an altitude (default is 0.0).
 
 ```python
 def get_global_home(map_name, alt0=0.0):
     with open(map_name, 'r') as file:
         lat0, lon0 = re.findall(r'-?[1-9]\d*\.?\d*', file.readline())
 
-    global_home = [float(lon0), float(lat0), alt0]  # alt0 is set to 0
+    global_home = [float(lon0), float(lat0), alt0]
     return global_home
+```
+
+Next, the global home is set with [`set_home_position`](https://github.com/udacity/udacidrone/blob/master/udacidrone/drone.py#L412-L418).
+
+```python
+global_home = pu.get_global_home(self.map_name)
+self.set_home_position(global_home[0], global_home[1], global_home[2])
 ```
 
 
 #### 2. Set your current local position
 
-Here as long as you successfully determine your local position relative to global home you'll be all set. Explain briefly how you accomplished this in your code.
+Current local position can be calculated from current global position and global home with [`global_to_local`](https://github.com/udacity/udacidrone/blob/master/udacidrone/frame_utils.py#L9-L20).
 
+```python
+current_global_position = [self._longitude, self._latitude, self._altitude]
+current_local_position = global_to_local(current_global_position, self.global_home)
+```
 
 #### 3. Set grid start position from local position
 
-This is another step in adding flexibility to the start location. As long as it works you're good to go!
+The grid start position is set to the integer list format of the current local position.
 
+```python
+start_position = [int(coord) for coord in self.local_position]
+```
 
 #### 4. Set grid goal position from geodetic coords
 
-This step is to add flexibility to the desired goal location. Should be able to choose any (lat, lon) within the map and have it rendered to a goal location on the grid.
+The Goal position may be set with command line arguments.
+```bash
+python motion_planning.py --goal_lon -122.394150 --goal_lat 37.797433 --goal_alt 10
+```
+
+The goal altitude is optional, and the default altitude is 5.0.
+```bash
+python motion_planning.py --goal_lon -122.394150 --goal_lat 37.797433
+```
+
+The global goal position will be converted to local goal position.
+If the goal position is not specified, the program will randomly pick a free position in the 2.5D map!
+```python
+# Set goal position on the grid
+if self.goal_position is None:
+    goal_position = pu.random_sample(data, polygons, num_samples=1, zmax=MAX_ALTITUDE).ravel()
+else:
+    goal_local_position = global_to_local(self.goal_position, self.global_home)
+    goal_position = [int(coord) for coord in goal_local_position]
+```
 
 
 #### 5. Modify A* to include diagonal motion (or replace A* altogether)

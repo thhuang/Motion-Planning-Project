@@ -196,7 +196,7 @@ def get_global_home(map_name, alt0=0.0):
     with open(map_name, 'r') as file:
         lat0, lon0 = re.findall(r'-?[1-9]\d*\.?\d*', file.readline())
 
-    global_home = [float(lon0), float(lat0), alt0]  # alt0 is set to 0
+    global_home = [float(lon0), float(lat0), alt0]
     return global_home
 
 

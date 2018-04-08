@@ -24,10 +24,16 @@ class States(Enum):
 
 class MotionPlanning(Drone):
 
-    def __init__(self, connection, map_name='colliders.csv'):
+    def __init__(self, connection, map_name='colliders.csv', goal_position=None):
         super().__init__(connection)
 
         self.map_name = map_name
+        if goal_position[0] is None or goal_position[1] is None:
+            self.goal_position = None
+        elif goal_position[2] is None:
+            self.goal_position = [goal_position[0], goal_position[1], 5.0]
+        else:
+            self.goal_position = goal_position
 
         self.target_position = np.array([0.0, 0.0, 0.0])
         self.waypoints = []
@@ -134,18 +140,22 @@ class MotionPlanning(Drone):
         current_global_position = [self._longitude, self._latitude, self._altitude]
 
         # Convert to current local position using global_to_local()
-        current_local_position = global_to_local(current_global_position, global_home)
+        current_local_position = global_to_local(current_global_position, self.global_home)
 
         # Double check
         #print('global home {0}, position {1}, local position {2}'.format(self.global_home, self.global_position, self.local_position))
-        print('global home {0}, position {1}, local position {2}'.format(global_home, current_global_position, current_local_position))
+        print('global home {0}, position {1}, local position {2}'.format(self.global_home, current_global_position, current_local_position))
 
         # Read in obstacle map
         data = np.loadtxt(self.map_name, delimiter=',', dtype='Float64', skiprows=2)
         polygons = pu.extract_polygons(data, SAFETY_DISTANCE)
 
-        # Set goal as some arbitrary position on the grid
-        goal_position = pu.random_sample(data, polygons, num_samples=1, zmax=MAX_ALTITUDE).ravel()
+        # Set goal position on the grid
+        if self.goal_position is None:
+            goal_position = pu.random_sample(data, polygons, num_samples=1, zmax=MAX_ALTITUDE).ravel()
+        else:
+            goal_local_position = global_to_local(self.goal_position, self.global_home)
+            goal_position = [int(coord) for coord in goal_local_position]
 
         # Define a grid for a particular altitude and safety margin around obstacles
         grid, north_offset, east_offset = pu.create_grid(data, goal_position[2], SAFETY_DISTANCE)
@@ -195,12 +205,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--port', type=int, default=5760, help='Port number')
     parser.add_argument('--host', type=str, default='127.0.0.1', help="host address, i.e. '127.0.0.1'")
+    parser.add_argument('--goal_lon', type=float, default=None, help='goal longitude')
+    parser.add_argument('--goal_lat', type=float, default=None, help='goal latitude')
+    parser.add_argument('--goal_alt', type=float, default=5.0, help='goal altitude')
     args = parser.parse_args()
 
     pu.construct_graph('colliders.csv', num_samples=6000, k=10, zmax=30)
 
     conn = MavlinkConnection('tcp:{0}:{1}'.format(args.host, args.port), timeout=60)
-    drone = MotionPlanning(conn)
+    drone = MotionPlanning(conn, goal_position=[args.goal_lon, args.goal_lat, args.goal_alt])
     time.sleep(1)
 
     drone.start()
