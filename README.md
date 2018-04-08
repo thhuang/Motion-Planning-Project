@@ -165,6 +165,9 @@ def can_connect(polygons, n1, n2):
 ### Execute the flight
 #### 1. Does it work?
 It works!
+```bash
+python motion_planning.py
+```
 <div align='center'>
     <img src='./images/simulation.gif' height='400px'">
 </div>
