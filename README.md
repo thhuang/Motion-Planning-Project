@@ -114,7 +114,6 @@ python motion_planning.py --goal_lon -122.394150 --goal_lat 37.797433
 The global goal position will be converted to local goal position.
 If the goal position is not specified, the program will randomly pick a free position in the 2.5D map!
 ```python
-# Set goal position on the grid
 if self.goal_position is None:
     goal_position = pu.random_sample(data, polygons, num_samples=1, zmax=MAX_ALTITUDE).ravel()
 else:
@@ -125,7 +124,9 @@ else:
 
 #### 5. Modify A* to include diagonal motion (or replace A* altogether)
 
-Minimal requirement here is to modify the code in planning_utils() to update the A* implementation to include diagonal motions on the grid that have a cost of sqrt(2), but more creative solutions are welcome. Explain the code you used to accomplish this step.
+[`Action`](https://github.com/thhuang/Motion-Planning-Project/blob/master/planning_utils.py#L16-L40) class is extended with four diagonal directions which have a cost of sqrt(2).
+[`valid_action`](https://github.com/thhuang/Motion-Planning-Project/blob/master/planning_utils.py#63-L92) function is also extended to check whether the diagonal motion is valid.
+Thus A* for grid search ([`a_star_grid`](https://github.com/thhuang/Motion-Planning-Project/blob/master/planning_utils.py#95-L144)) is able to search for a diagonal path.
 
 
 #### 6. Cull waypoints 
