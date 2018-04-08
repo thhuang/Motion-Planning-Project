@@ -166,7 +166,8 @@ def can_connect(polygons, n1, n2):
 
 ### Execute the flight
 
-#### 1. Does it work?```bash
+#### 1. Does it work?
+```bash
 python motion_planning.py
 ```
 <div align='center'>
