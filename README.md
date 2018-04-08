@@ -7,7 +7,7 @@
 - [x] Perform a search using A* or other search algorithm.
 - [x] Use a collinearity test or ray tracing method (like Bresenham) to remove unnecessary waypoints.
 - [x] Return waypoints in local ECEF coordinates (format for `self.all_waypoints` is [N, E, altitude, heading], where the drone’s start location corresponds to [0, 0, 0, 0].
-- [ ] Write it up.
+- [x] Write it up.
 
 
 ---
