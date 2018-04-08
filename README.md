@@ -60,6 +60,8 @@ After planning, the drone will take off, go through waypoints, and fly to the go
 </p>
 
 
+### Implementing Your Path Planning Algorithm
+
 #### 1. Set your global home position
 
 Since the pre-determined global home position is written in the first line of [`colliders.csv`](https://github.com/thhuang/Motion-Planning-Project/blob/master/colliders.csv#L1), 
