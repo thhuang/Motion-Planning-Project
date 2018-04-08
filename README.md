@@ -134,8 +134,32 @@ Furthermore, A* for graph search ([`a_star_graph`](https://github.com/thhuang/Mo
 
 #### 6. Cull waypoints 
 
-For this step you can use a collinearity test or ray tracing method like Bresenham. The idea is simply to prune your path of unnecessary waypoints. Explain the code you used to accomplish this step.
+By roughly examine whether two nodes in the path can be connected without crossing any obstacle (polygon), the final waypoints are culled from the pruned path.
+```python
+def prune_path(polygons, path):
+    print('Pruning the path ...')
 
+    pruned_path = [p for p in path]
+
+    # prune the path!
+    i = 0
+    while i < len(pruned_path) - 2:
+        p1 = pruned_path[i]
+        p3 = pruned_path[i + 2]
+        if can_connect(polygons, p1, p3):
+            pruned_path.remove(pruned_path[i + 1])
+        else:
+            i += 1
+    return pruned_path
+    
+    
+def can_connect(polygons, n1, n2):
+    line = LineString((n1[0:2], n2[0:2]))
+    for poly in polygons:
+        if min(n1[2], n2[2]) < poly.height and poly.crosses(line):
+            return False
+    return True
+```
 
 
 ### Execute the flight
