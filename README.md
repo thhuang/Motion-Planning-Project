@@ -27,7 +27,7 @@ Moreover, a planning state is added to automatically generate waypoints.
 
 Functions and classes for path planning is written in `planning_utils.py`.
 Since the planning algorithm is based on the graph search, nodes should be sampled before constructing the graph.
-In order to speed up the algorithm, the graph (Fig 1) will be generated only once from the 2.5D map and be reused every inference.
+In order to speed up the process, the graph (Fig 1) will be generated only once from the 2.5D map and be reused every inference.
 
 <div align = 'center'>
     <img src = './images/graph_2000.png' height = '400px'>
@@ -60,6 +60,18 @@ After planning, the drone will take off, go through waypoints, and fly to the go
 </p>
 
 
+#### 1. Set your global home position
+
+Since the pre-determined global home position is written in the first line of [`colliders.csv`](https://github.com/thhuang/Motion-Planning-Project/blob/master/colliders.csv), [`planning_utils.get_global_home`](https://github.com/thhuang/Motion-Planning-Project/blob/master/planning_utils#L195-200)
+
+```python
+def get_global_home(map_name, alt0=0.0):
+    with open(map_name, 'r') as file:
+        lat0, lon0 = re.findall(r'-?[1-9]\d*\.?\d*', file.readline())
+
+    global_home = [float(lon0), float(lat0), alt0]  # alt0 is set to 0
+    return global_home
+```
 
 #### 2. Set your current local position
 
